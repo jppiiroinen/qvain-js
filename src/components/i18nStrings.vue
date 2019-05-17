@@ -12,7 +12,7 @@
 				<div class="input-group__prepend" slot="prepend">
 					<p class="input-group__language text-dark font-italic">{{ languages[lang] }}</p>
 				</div>
-				<b-form-input type="text" :ref="lang" class="text-field" :placeholder="uiPlaceholder" v-model="state[lang]" />
+				<b-form-input type="text" :ref="lang" class="text-field" :placeholder="uiPlaceholder" @change="updateValue" v-model="state[lang]" />
 				<b-input-group slot="append">
 					<span class="remove-button">
 						<DeleteButton @click="deleteLanguage(lang)"/>
@@ -114,7 +114,7 @@ export default {
 				prop: this.property,
 				val: this.state,
 			})
-		},
+		}
 	},
 	computed: {
 		hasEmptyValues() {

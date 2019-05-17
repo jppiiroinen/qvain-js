@@ -25,8 +25,8 @@
 				</b-input-group>
 
 				<b-button-group size="sm" class="mx-1">
-					<b-btn v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited" ref="dataset-save-button">Save</b-btn>
-					<b-btn v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited" ref="dataset-publish-button">Publish</b-btn>
+					<b-btn v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited || isDataChanged == false" ref="dataset-save-button">Save</b-btn>
+					<b-btn v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited || $store.state.metadata.id == null || (qvainData != null && qvainData.published && qvainData.synced >= qvainData.modified) || isDataChanged" ref="dataset-publish-button">Publish</b-btn>
 				</b-button-group>
 
 				<b-button-group size="sm" class="mx-1" v-if="!inDev">
@@ -83,8 +83,8 @@
 			</div>
 			<div v-if="selectedSchema" :style="{'display': 'flex', 'flex-flow': 'row-reverse', 'margin-bottom': '10px'}">
 				<b-button-group size="sm" class="mx-1">
-					<b-btn v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited" ref="dataset-save-button">Save</b-btn>
-					<b-btn v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited" ref="dataset-publish-button">Publish</b-btn>
+					<b-btn v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited || isDataChanged == false" ref="dataset-save-button">Save</b-btn>
+					<b-btn v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited || $store.state.metadata.id == null || (qvainData != null && qvainData.published && qvainData.synced >= qvainData.modified) || isDataChanged" ref="dataset-publish-button">Publish</b-btn>
 				</b-button-group>
 			</div>
 		</div>
@@ -154,6 +154,8 @@ export default {
 			showPublishConfirmation: false,
 			inDev: true,
 			saving: false,
+			isDataChanged: false,
+			qvainData: null
 		}
 	},
 	methods: {
@@ -214,17 +216,17 @@ export default {
 				if (isExisting) {
 					payload.id = currentId
 					const response = await apiClient.put("/datasets/" + currentId, payload)
-
 					this.$root.showAlert("Dataset successfully saved", "primary")
 				} else {
 					const { data: { id }} = await apiClient.post("/datasets/", payload)
-
 					this.$store.commit('setMetadata', { id })
 					this.$router.replace({ name: 'tab', params: { id }})
 
 					this.$root.showAlert("Success! Created as " + id, "success")
 				}
+				this.isDataChanged = false
 			} catch(error) {
+				console.log(error)
 				this.$root.showAlert("Save failed!", "danger")
 			} finally {
 				this.saving = false
@@ -277,6 +279,9 @@ export default {
 				this.$store.commit('loadHints', this.selectedSchema.ui)
 				this.$store.commit('loadData', Object(data.dataset))
 				this.$store.commit('setMetadata', { id })
+				this.qvainData = data
+			} catch (error) {
+				console.log(error)
 			} finally {
 				this.loading = false
 			}
@@ -299,9 +304,15 @@ export default {
 				{'allowUndefined': true},
 			)
 			this.validator.v = this.$store.state.vState
+
 			this.unsubscribeFunc = this.$store.subscribe((mutation) => {
 				if (mutation.type !== 'initValue') {
 					this.validator.validateData(this.$store.state.record)
+
+					// the data has been changed after the initial load by the user
+					if (mutation.type == 'updateValue') {
+						this.isDataChanged = true
+					}
 				}
 			})
 		}
