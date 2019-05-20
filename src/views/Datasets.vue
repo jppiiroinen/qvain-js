@@ -15,7 +15,7 @@
 			</b-input-group>
 
 			<b-button-group class="ml-2 new-record" size="sm">
-				<b-btn class="new-record__button" variant="primary" @click="createNewRecord">Create new record</b-btn>
+				<b-btn id="datasets_button_create-new-record" class="new-record__button" variant="primary" @click="createNewRecord">Create new record</b-btn>
 			</b-button-group>
 		</b-button-toolbar>
 

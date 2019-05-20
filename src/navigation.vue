@@ -38,7 +38,7 @@ Weekdays from 8:30 AM to 4 PM" href="mailto:servicedesk@csc.fi?subject=Fairdata%
 					-->
 
 					<!-- login dropdown -->
-					<b-nav-item-dropdown v-if="$auth.loggedIn" right>
+					<b-nav-item-dropdown id="usermenu" v-if="$auth.loggedIn" right>
 
 						<template slot="text">
 							<span style="font-weight: bold;">User</span>
@@ -48,8 +48,8 @@ Weekdays from 8:30 AM to 4 PM" href="mailto:servicedesk@csc.fi?subject=Fairdata%
 							<font-awesome-icon icon="user" class="text-primary mr-2" fixed-width /> <a>{{ $auth.user.name }}</a>
 						</b-dropdown-header>
 						<b-dropdown-divider></b-dropdown-divider>
-						<b-dropdown-item to="/userinfo">About me</b-dropdown-item>
-						<b-dropdown-item @click="logout()">Sign out</b-dropdown-item>
+						<b-dropdown-item id="usermenu_userinfo" to="/userinfo">About me</b-dropdown-item>
+						<b-dropdown-item id="usermenu_signout" @click="logout()">Sign out</b-dropdown-item>
 					</b-nav-item-dropdown>
 					<b-nav-item v-else :href="$auth.loginUrl">Login</b-nav-item>
 

@@ -5,14 +5,14 @@
 		<div>
 			<b-button-toolbar class="tool-bar" aria-label="Dataset toolbar">
 				<b-button-group size="sm" class="mx-1">
-					<b-btn v-b-tooltip.hover title="Create new empty dataset" @click="createNewRecord()">New dataset</b-btn>
+					<b-btn id="editor_button_new-dataset" v-b-tooltip.hover title="Create new empty dataset" @click="createNewRecord()">New dataset</b-btn>
 					<!-- hidden due to need of redesign in editor to support this
 					<b-btn v-b-tooltip.hover title="Clone this dataset as new dataset" @click="createCloneRecord()">Clone current dataset</b-btn>
 					-->
 				</b-button-group>
 
 				<b-input-group size="sm" class="w-25 mx-1" prepend="Where are my files">
-					<b-form-select value="fairdata" v-model="selectedSchema" placeholder="None" :disabled="!!selectedSchema" @change="selectSchema">
+					<b-form-select id="editor_select_schema" value="fairdata" v-model="selectedSchema" placeholder="None" :disabled="!!selectedSchema" @change="selectSchema">
 						<optgroup :label="bundle" v-for="(bundle, index) in bundles" :key="index">
 							<option :value="val" v-for="(val, id) in getSchemas(bundle)" :key="id">{{ !selectedSchema ? val.name : val.shortName }}</option>
 						</optgroup>
@@ -21,12 +21,12 @@
 				</b-input-group>
 
 				<b-input-group size="sm" class="w-25 mx-1" prepend="owner">
-					<b-form-select :value="$auth.user ? $auth.user.name : 'you'" :options="[ $auth.user ? $auth.user.name : 'you' ]"></b-form-select>
+					<b-form-select id="editor_select_owner" :value="$auth.user ? $auth.user.name : 'you'" :options="[ $auth.user ? $auth.user.name : 'you' ]"></b-form-select>
 				</b-input-group>
 
 				<b-button-group size="sm" class="mx-1">
-					<b-btn v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited || isDataChanged == false" ref="dataset-save-button">Save</b-btn>
-					<b-btn v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited || $store.state.metadata.id == null || (qvainData != null && qvainData.published && qvainData.synced >= qvainData.modified) || isDataChanged" ref="dataset-publish-button">Publish</b-btn>
+					<b-btn id="editor_button_save_top" v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited || isDataChanged == false" ref="dataset-save-button">Save</b-btn>
+					<b-btn id="editor_button_publish_top" v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited || $store.state.metadata.id == null || (qvainData != null && qvainData.published && qvainData.synced >= qvainData.modified) || isDataChanged" ref="dataset-publish-button">Publish</b-btn>
 				</b-button-group>
 
 				<b-button-group size="sm" class="mx-1" v-if="!inDev">
@@ -83,8 +83,8 @@
 			</div>
 			<div v-if="selectedSchema" :style="{'display': 'flex', 'flex-flow': 'row-reverse', 'margin-bottom': '10px'}">
 				<b-button-group size="sm" class="mx-1">
-					<b-btn v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited || isDataChanged == false" ref="dataset-save-button">Save</b-btn>
-					<b-btn v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited || $store.state.metadata.id == null || (qvainData != null && qvainData.published && qvainData.synced >= qvainData.modified) || isDataChanged" ref="dataset-publish-button">Publish</b-btn>
+					<b-btn id="editor_button_save_bottom" v-b-tooltip.hover title="Save as a draft. Saving does not make your dataset public nor visible to anyone. You can save as many times as you want before publishing." @click="save" :disabled="rateLimited || isDataChanged == false" ref="dataset-save-button">Save</b-btn>
+					<b-btn id="editor_button_publish_bottom" v-b-tooltip.hover title="Publish makes the saved dataset public. Remember to always save the datset before publishing (only the latest saved version gets published)." @click="confirmPublish" :disabled="rateLimited || $store.state.metadata.id == null || (qvainData != null && qvainData.published && qvainData.synced >= qvainData.modified) || isDataChanged" ref="dataset-publish-button">Publish</b-btn>
 				</b-button-group>
 			</div>
 		</div>
