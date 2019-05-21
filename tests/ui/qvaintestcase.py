@@ -13,6 +13,7 @@
 # All Rights Reserved.
 ################################################################
 
+import os
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -21,7 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import NoSuchElementException
-import os
+from selenium.webdriver.common.action_chains import ActionChains
 
 
 class QvainTestCase(unittest.TestCase):
@@ -102,3 +103,15 @@ class QvainTestCase(unittest.TestCase):
             return False
         except NoSuchElementException:
             return True
+
+    def scroll_to_element(self, elem):
+        actions = ActionChains(self.driver)
+        actions.move_to_element(elem)
+        actions.perform()
+
+    def scroll_to_up(self):
+        self.driver.find_element_by_tag_name('body').send_keys(Keys.HOME)
+
+    def close_alert(self):
+        close_alert_btn = self.wait.until(EC.presence_of_element_located((By.ID, 'root_alert'))).find_element_by_class_name("close")
+        close_alert_btn.click()

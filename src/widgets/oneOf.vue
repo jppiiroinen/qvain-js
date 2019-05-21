@@ -1,5 +1,5 @@
 <template>
-	<wrapper :wrapped="!inArray">
+	<wrapper :id="property + '_oneOf'" :wrapped="!inArray">
 		<div v-if="chosen === null" class="conditional-wrapper">
 			<b-dropdown class="m-2" text="Choose type" variant="primary">
 				<b-dropdown-item v-for="(sub, i) in schema['oneOf']"

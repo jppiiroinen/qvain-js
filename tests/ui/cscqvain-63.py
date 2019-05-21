@@ -22,6 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 
+
 from qvaintestcase import QvainTestCase
 
 
@@ -120,10 +121,47 @@ class CSCQVAIN63(QvainTestCase):
         # Save changes
         saveButtonTop.click()
 
+        # Close alert
+        self.close_alert()
+
         ## Actors
         navLinkActors = self.driver.find_element_by_id("nav-link_actors")
         navLinkActors.click()
 
+        # Creator of the dataset
+        creator_recordField_button_add = self.driver.find_element_by_id("creator_array_button_add")
+        creator_recordField_button_add.click()
+
+        # add then an organization
+        creator_chooseType_button = self.driver.find_element_by_id("creator_array_0_oneOf").find_element_by_class_name("dropdown-toggle")
+        creator_chooseType_button.click()
+
+        organization_dropdown_option = self.driver.find_element_by_id("creator_array_0_oneOf").find_element_by_class_name("dropdown-menu").find_element_by_partial_link_text("Organizatio")
+        organization_dropdown_option.click()
+
+        organization_name_language = Select(self.driver.find_element_by_id("name_language-select"))
+        organization_name_language.select_by_visible_text("English")
+        organization_name_input = self.driver.find_element_by_id("name_en_input")
+        organization_name_input.send_keys("Test Organization")
+
+        ## Rights and Licenses
+        self.scroll_to_up()
+        navLinkRights = self.driver.find_element_by_id("nav-link_rights")
+        navLinkRights.click()
+
+        # TODO: add the required rights and licenses information
+
+        access_rights_object = self.driver.find_element_by_id("access_rights_object")
+        access_rights_description_language_select = Select(access_rights_object.find_element_by_id("description_language-select"))
+        access_rights_description_language_select.select_by_visible_text("English")
+        access_rights_description_input = access_rights_object.find_element_by_id("description_en_input")
+        access_rights_description_input.send_keys("Test access rights description")
+
+        access_type_tab_selector = self.driver.find_element_by_id("access_type_tab-selector")
+        access_type_tab_selector_multiselect = access_type_tab_selector.find_element_by_class_name("multiselect__tags")
+        access_type_tab_selector_multiselect.click()
+
+        # TODO: select value from the multiselect
 
         # TODO: then save
         # TODO: now the publish buttons are enabled

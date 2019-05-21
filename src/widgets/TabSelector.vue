@@ -1,5 +1,5 @@
 <template>
-	<div class="q-tab-selector">
+	<div :id="property + '_tab-selector'" class="q-tab-selector">
 		<!--
 		Tab schema {{ schema.required }}
 		Widget {{ widget }}

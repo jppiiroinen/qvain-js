@@ -1,5 +1,5 @@
 <template>
-	<record-field class="min-height" :required="required" :wrapped="wrapped" :header="!inArray" :error="!isValid">
+	<record-field :id="property + '_array'" class="min-height" :required="required" :wrapped="wrapped" :header="!inArray" :error="!isValid">
 		<title-component slot="title" :title="uiLabel" />
 		<div slot="header-right" class="header__right">
 			<p :key="error" v-for="error in errors" class="error-message">{{ error }}</p>
@@ -29,6 +29,7 @@
 				<b-tab
 					v-for="(child, index) in value"
 					style="{margin-top: 5px}"
+					:id="property + '_array_tab_' + index"
 					:key="index"
 					:title-link-class="{ 'update_trigger_hack': !!tabTitle(index) }">
 					<template slot="title">
@@ -40,7 +41,7 @@
 						:path="newPath(index)"
 						:value="value[index]"
 						:parent="parent[property]"
-						:property="index"
+						:property="property + '_array_' + index"
 						:tab="myTab"
 						:activeTab="activeTab"
 						:depth="depth"
@@ -49,8 +50,8 @@
 				</b-tab>
 
 				<div slot="tabs" class="input__controls">
-					<b-btn class="input__control mr-2" type="button" variant="secondary"><font-awesome-icon icon="list" fixed-width/> <span>{{ minimum || "–" }} / {{ value.length }} / {{ maximum || "–" }}</span></b-btn>
-					<b-btn class="input__control" type="button" variant="primary" :disabled="value.length >= this.maximum" @click="doPlus()"><font-awesome-icon icon="plus" fixed-width /></b-btn>
+					<b-btn :id="property + '_array_button_stats'" class="input__control mr-2" type="button" variant="secondary"><font-awesome-icon icon="list" fixed-width/> <span>{{ minimum || "–" }} / {{ value.length }} / {{ maximum || "–" }}</span></b-btn>
+					<b-btn :id="property + '_array_button_add'" class="input__control" type="button" variant="primary" :disabled="value.length >= this.maximum" @click="doPlus()"><font-awesome-icon icon="plus" fixed-width /></b-btn>
 				</div>
 
 			</b-tabs>
