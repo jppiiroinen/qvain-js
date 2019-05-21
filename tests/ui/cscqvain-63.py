@@ -2,10 +2,13 @@
 ################################################################
 # This file contains functional tests for the CSCQAVAIN-63.
 #
+# This file is part of Qvain project.
+#
 # Author(s):
 #     Juhapekka Piiroinen <juhapekka.piiroinen@csc.fi>
 #
-# (C) 2019 CSC
+# Copyright 2019 CSC - IT Center for Science Ltd.
+# Copyright 2019 The National Library Of Finland
 # All Rights Reserved.
 ################################################################
 
@@ -66,10 +69,6 @@ class CSCQVAIN63(QvainTestCase):
         self.login()
         self.open_datasets()
 
-        newDatasetButton = self.driver.find_element_by_id("editor_button_new-dataset")
-        publishButtonTop = self.driver.find_element_by_id("editor_button_publish_top")
-        saveButtonTop = self.driver.find_element_by_id("editor_button_save_top")
-
         # both buttons save and publish should be disabled
         # bottom buttons are not visible
         self.publish_and_save_buttons(publish=False, save=False, bottom_visible=False)
@@ -90,13 +89,42 @@ class CSCQVAIN63(QvainTestCase):
         self.publish_and_save_buttons(publish=False, save=True, bottom_visible=True)
 
         # lets save the data once
+        saveButtonTop = self.driver.find_element_by_id("editor_button_save_top")
         saveButtonTop.click()
 
         # the publish button should be still disabled
         # save buttons are enabled
         self.publish_and_save_buttons(publish=False, save=True, bottom_visible=True)
 
-        # TODO: insert required fields
+        ###############################################
+        #### Enter all the details for required fields
+
+        ## Content Description
+        navLinkContentDescription = self.driver.find_element_by_id("nav-link_description")
+        navLinkContentDescription.click()
+
+        # set title, select language to be english
+        titleLanguageSelect = Select(self.driver.find_element_by_id("title_language-select"))
+        titleLanguageSelect.select_by_visible_text("English")
+
+        titleInputEnglish = self.driver.find_element_by_id("title_en_input")
+        titleInputEnglish.send_keys("Hello Title")
+
+        # set description, select language to be english
+        descriptionLanguageSelect = Select(self.driver.find_element_by_id("description_language-select"))
+        descriptionLanguageSelect.select_by_visible_text("English")
+
+        descriptionTextAreaEnglish = self.driver.find_element_by_id("description_textarea-en")
+        descriptionTextAreaEnglish.send_keys("A description for this test")
+
+        # Save changes
+        saveButtonTop.click()
+
+        ## Actors
+        navLinkActors = self.driver.find_element_by_id("nav-link_actors")
+        navLinkActors.click()
+
+
         # TODO: then save
         # TODO: now the publish buttons are enabled
 

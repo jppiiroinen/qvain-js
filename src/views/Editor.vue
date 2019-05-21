@@ -74,7 +74,7 @@
 			<ul class="nav nav-tabs">
 				<!-- TODO: errors could be shown in tabs also -->
 				<li v-for="tab in tabs" :key="tab.uri" class="nav-item">
-					<router-link class="nav-link" :to="`/dataset/${id}/${tab.uri}`">{{tab.label}}</router-link>
+					<router-link :id="'nav-link_' + tab.uri" class="nav-link" :to="`/dataset/${id}/${tab.uri}`">{{ tab.label }}</router-link>
 				</li>
 			</ul>
 

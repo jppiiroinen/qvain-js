@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 ################################################################
+# This contains the base class QvainTestCase with some helper
+# functions for tests.
 #
-# Author(s): Juhapekka Piiroinen <juhapekka.piiroinen@csc.fi>
+# This file is part of Qvain project.
 #
-# (C) 2019 CSC
+# Author(s):
+#     Juhapekka Piiroinen <juhapekka.piiroinen@csc.fi>
+#
+# Copyright 2019 CSC - IT Center for Science Ltd.
+# Copyright 2019 The National Library Of Finland
 # All Rights Reserved.
 ################################################################
 

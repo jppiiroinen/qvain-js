@@ -1,5 +1,5 @@
 <template>
-	<b-input-group>
+	<b-input-group class="language_select">
 		<b-input-group-text class="height" slot="prepend">
 			<font-awesome-icon icon="plus" fixed-width class="text-dark" />
 		</b-input-group-text>
