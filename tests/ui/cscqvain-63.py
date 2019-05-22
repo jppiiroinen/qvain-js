@@ -14,6 +14,7 @@
 
 import sys
 import os
+import time
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -73,6 +74,7 @@ class CSCQVAIN63(QvainTestCase):
         #### Enter all the details for required fields
 
         ## Content Description
+        self.scroll_to_up()
         self.click_elem("nav-link_description")
 
         # set title, select language to be english
@@ -84,11 +86,12 @@ class CSCQVAIN63(QvainTestCase):
         self.enter_text("description_textarea-en", "A description for this test")
 
         # Save changes
-        self.scroll_to_bottom()
-        self.click_elem("editor_button_save_bottom")
+        self.scroll_to_up()
+        self.click_elem("editor_button_save_top")
         self.close_alert()
 
         ## Actors
+        self.scroll_to_up()
         self.click_elem("nav-link_actors")
 
         # Creator of the dataset
@@ -113,8 +116,8 @@ class CSCQVAIN63(QvainTestCase):
         self.select_option_from_multiselect("access_type_object", "Open")
 
         # then save
-        self.scroll_to_bottom()
-        self.click_elem("editor_button_save_bottom")
+        self.scroll_to_up()
+        self.click_elem("editor_button_save_top")
         self.close_alert()
 
         # now the publish buttons are enabled and save button is disabled

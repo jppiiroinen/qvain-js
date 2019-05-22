@@ -17,6 +17,7 @@ import os
 import sys
 import logging
 import unittest
+import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -120,7 +121,7 @@ class QvainTestCase(unittest.TestCase):
         actions.perform()
 
     def scroll_to_up(self):
-        self.driver.find_element_by_tag_name('body').send_keys(Keys.HOME)
+        self.driver.execute_script("window.scroll(0, 0);")
 
     def scroll_to_bottom(self):
         self.driver.find_element_by_tag_name('body').send_keys(Keys.END)
