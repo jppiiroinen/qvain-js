@@ -4,7 +4,7 @@
     <b-form-group :class="isRequired ? 'required' : ''" id="fundertype-form-group" horizontal :label-cols="uiLabel ? labelCols : 1" :description="uiDescription" :label="uiLabel">
 	  <b-input-group>
         <div v-if="type === 'multiselect'" class="flex-grow-1">
-          <Multiselect v-model="model" @input="setValue" :options="items" v-if="items" :customLabel="customLabel"
+          <Multiselect :id="property + '_multiselect'" v-model="model" @input="setValue" :options="items" v-if="items" :customLabel="customLabel"
             :optionsLimit="40" :allowEmpty="!isRequired" :showLabels="false" />
         </div>
         <b-input-group-append>

@@ -28,7 +28,7 @@
 		<!-- actual component -->
 		<!-- keep-alive -->
 		<keep-alive>
-			<component v-if="activeTab === myTab" :is="widget" v-bind="widgetProps" :required="required" :schema="schema" :path="path" :value="parent[property]" :valtype="dataType" :parent="parent" :property="property" :hasTypeError="hasTypeError" :tab="myTab" :activeTab="activeTab" :depth="newdepth" v-on="$listeners">
+			<component v-if="activeTab === myTab" :is="widget" v-bind="widgetProps" :id="property + '_' + dataType" :required="required" :schema="schema" :path="path" :value="parent[property]" :valtype="dataType" :parent="parent" :property="property" :hasTypeError="hasTypeError" :tab="myTab" :activeTab="activeTab" :depth="newdepth" v-on="$listeners">
 				<p>{{ dataType }}</p>
 			</component>
 			<skip v-else :required="(schema.required || []).includes(property)" :schema="schema" :path="path" :value="parent[property]" :valtype="dataType" :parent="parent" :property="property" :hasTypeError="hasTypeError" :tab="myTab" :activeTab="activeTab" :depth="depth" v-on="$listeners"></skip>
