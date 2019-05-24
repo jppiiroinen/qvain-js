@@ -36,6 +36,8 @@ class QvainTestCase(unittest.TestCase):
         self.logger.level = logging.DEBUG
         self.stream_handler = logging.StreamHandler(sys.stdout)
         self.logger.addHandler(self.stream_handler)
+        if self.start_test:
+            self.start_test()
 
     def login(self, username=os.environ["TEST_USERNAME"], password=os.environ["TEST_PASSWORD"], address=os.environ["TEST_ADDRESS"]):
         self.driver.get(address)
@@ -99,6 +101,8 @@ class QvainTestCase(unittest.TestCase):
         self.logger.info(message)
 
     def tearDown(self):
+        if self.end_test:
+            self.end_test()
         self.driver.quit()
         self.logger.removeHandler(self.stream_handler)
 

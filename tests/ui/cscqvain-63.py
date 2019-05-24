@@ -27,21 +27,19 @@ from qvaintestcase import QvainTestCase
 
 
 class CSCQVAIN63(QvainTestCase):
-    def test_1_login(self):
+    def start_test(self):
         self.login()
-
         # check that usermenu is visible
         self.open_usermenu()
         usermenu_fullname = self.driver.find_element_by_xpath('//*[@id="usermenu"]/div/h6/a')
         assert os.environ["TEST_FULLNAME"] in usermenu_fullname.text
         self.close_usermenu()
 
+    def end_test(self):
         self.logout()
         self.close()
 
-    def test_2_datasets(self):
-        self.print("datasets")
-        self.login()
+    def test_1_datasets(self):
         self.open_datasets()
 
         # both buttons save and publish should be disabled
