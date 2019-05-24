@@ -39,22 +39,34 @@ class QvainTestCase(unittest.TestCase):
         if self.start_test:
             self.start_test()
 
+    def is_frontend_running(self):
+        # This is the xpath for default error page header in nginx
+        # We do not have such xpath in our frontend
+        assert self.elem_is_not_found_xpath("/html/body/center[1]/h1"), "It looks like that the frontend process is not running. NGINX error page?"
+
     def login(self, username=os.environ["TEST_USERNAME"], password=os.environ["TEST_PASSWORD"], address=os.environ["TEST_ADDRESS"]):
+        # lets ensure that we are on our first initial page
         self.driver.get(address)
+        self.is_frontend_running()
         self.wait.until(EC.title_is("Qvain"))
+
+        # lets tap the Login now button on our landing page
         login_button = self.driver.find_element_by_link_text("Login now!")
         login_button.click()
 
+        # we will get a page redirection to another service
         self.wait.until(EC.title_is("Web Login Service"))
         loginHakaTestBtn = self.driver.find_element_by_link_text("authn/LoginHakaTest")
         loginHakaTestBtn.click()
 
+        # we will get a page redirection to another service again
         self.wait.until(EC.title_is("Haka — WAYF"))
         userIdpSelectDropDown = Select(self.driver.find_element_by_id("userIdPSelection"))
         userIdpSelectDropDown.select_by_value("https://testidp.funet.fi/idp/shibboleth")
         userIdpSelectButton = self.driver.find_element_by_name("Select")
         userIdpSelectButton.click()
 
+        # we will get a page redirection to another service again too
         self.wait.until(EC.title_is("CSC - Haka test IdP"))
         usernameInput = self.driver.find_element_by_id("username")
         usernameInput.send_keys(username)
@@ -64,7 +76,7 @@ class QvainTestCase(unittest.TestCase):
         loginButton = self.driver.find_element_by_name("_eventId_proceed")
         loginButton.click()
 
-        # front page of qvain
+        # we should have been redirected back to the our web service
         self.wait.until(EC.title_is("Qvain"))
 
     def open_usermenu(self):
@@ -75,19 +87,25 @@ class QvainTestCase(unittest.TestCase):
         userDropdown = self.driver.find_element_by_id("usermenu")
         userDropdown.click()
 
-    def open_datasets(self):
+    def open_datasets_view(self):
+        # lets tap the navigation bar where we should see the link
         myDatasetsLink = self.driver.find_element_by_link_text("My Datasets")
         myDatasetsLink.click()
 
-        # datasets view
+        # lets wait until the page has been loaded
         header = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@class="component-title"]')))
-        assert 'My datasets' in header.text
+        assert 'My datasets' in header.text, "We are not in My datasets view, it seems that we are in {header}".format(header=header.text)
+
+    def open_editor_view(self):
+        self.open_datasets_view()
+
+        # lets tap on the create new record button
         createNewDataset = self.driver.find_element_by_id('datasets_button_create-new-record')
         createNewDataset.click()
 
-        # new dataset view
-        createDatasetHeader = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@class="component-title"]')))
-        assert 'Dataset' in createDatasetHeader.text
+        # we should end up into new dataset page
+        header = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@class="component-title"]')))
+        assert 'Dataset' in header.text, "We are not in Dataset view, it seems that we are in {header}".format(header=header.text)
 
     def logout(self):
         self.open_usermenu()
@@ -97,7 +115,7 @@ class QvainTestCase(unittest.TestCase):
     def verify_that_user_is_logged_in(self):
         self.open_usermenu()
         usermenu_fullname = self.driver.find_element_by_xpath('//*[@id="usermenu"]/div/h6/a')
-        assert os.environ["TEST_FULLNAME"] in usermenu_fullname.text
+        assert os.environ["TEST_FULLNAME"] in usermenu_fullname.text, "It seems that the user ({user} != {expected}) is not logged in".format(user=usermenu_fullname.text, expected=os.environ["TEST_FULLNAME"])
         self.close_usermenu()
 
     def close(self):
@@ -113,14 +131,21 @@ class QvainTestCase(unittest.TestCase):
         self.logger.removeHandler(self.stream_handler)
 
     def button_is_disabled(self, btn):
-        assert "disabled" in btn.get_attribute("class")
+        assert "disabled" in btn.get_attribute("class"), "It looks like that the button was ENABLED."
 
     def button_is_enabled(self, btn):
-        assert "disabled" not in btn.get_attribute("class")
+        assert "disabled" not in btn.get_attribute("class"), "It looks like that the button was DISABLED"
 
-    def elem_is_not_found(self, btnid):
+    def elem_is_not_found(self, elemid):
         try:
-            btn = self.driver.find_element_by_id(btnid)
+            btn = self.driver.find_element_by_id(elemid)
+            return False
+        except NoSuchElementException:
+            return True
+
+    def elem_is_not_found_xpath(self, xpath):
+        try:
+            btn = self.driver.find_element_by_xpath(xpath)
             return False
         except NoSuchElementException:
             return True
@@ -164,16 +189,27 @@ class QvainTestCase(unittest.TestCase):
         self.driver.find_element_by_id(elemId).find_element_by_class_name("dropdown-menu").find_element_by_partial_link_text(option).click()
 
     def select_option_from_multiselect(self, elemId, optionValue):
+        # lets open the multiselect
         elem = self.driver.find_element_by_id(elemId)
         multiselect = elem.find_element_by_class_name("multiselect")
         multiselect.click()
+
+        # lets scan for the options which are available.
         multiselect_content = elem.find_element_by_class_name("multiselect__content")
         multiselect_options = multiselect_content.find_elements_by_class_name("multiselect__element")
-        # TODO: this can fail when the network connection is not working properly. 
+
+        # this can fail when the network connection is not working properly.
+        # so lets ensure that we did get more than zero options
+        assert len(multiselect_options) > 0, "We did not find any options from the multiselect"
+
+        # lets find the option from the list of found options
         for option in multiselect_options:
             if option.text.find(optionValue) > -1:
+                # once we found it we click on it
                 option.click()
                 return
+
+        # we did not find the option from the list
         raise NoSuchElementException("{option} was not found from {elem} ".format(option=optionValue, elem=elemId))
 
 
@@ -188,8 +224,8 @@ class QvainTestCase(unittest.TestCase):
             publishButtons.append(self.driver.find_element_by_id("editor_button_publish_bottom"))
             saveButtons.append(self.driver.find_element_by_id("editor_button_save_bottom"))
         else:
-            assert self.elem_is_not_found("editor_button_publish_bottom")
-            assert self.elem_is_not_found("editor_button_save_bottom")
+            assert self.elem_is_not_found("editor_button_publish_bottom"), "editor_button_publish_bottom was visible"
+            assert self.elem_is_not_found("editor_button_save_bottom"), "editor_button_save_bottom was visible"
 
         for btn in saveButtons:
             if save:

@@ -34,8 +34,12 @@ class CSCQVAIN63(QvainTestCase):
         self.logout()
         self.close()
 
-    def test_1_datasets(self):
-        self.open_datasets()
+    def test_1_my_datasets(self):
+        self.open_datasets_view()
+        assert False, "TODO"
+
+    def test_2_create_new_dataset(self):
+        self.open_editor_view()
 
         # both buttons save and publish should be disabled
         # bottom buttons are not visible
@@ -48,7 +52,10 @@ class CSCQVAIN63(QvainTestCase):
         self.publish_and_save_buttons(publish=False, save=True, bottom_visible=True)
 
         # the user should be selected as owner by default
-        assert self.is_option_selected("editor_select_owner", os.environ["TEST_FULLNAME"])
+        assert self.is_option_selected(
+            "editor_select_owner",
+            os.environ["TEST_FULLNAME"]
+        ), "The currently logged in user is not marked as owner of the dataset."
 
         # save button should be now enabled
         # publish button should be still disabled
