@@ -94,6 +94,12 @@ class QvainTestCase(unittest.TestCase):
         signoutMenuItem = self.driver.find_element_by_id("usermenu_signout")
         signoutMenuItem.click()
 
+    def verify_that_user_is_logged_in(self):
+        self.open_usermenu()
+        usermenu_fullname = self.driver.find_element_by_xpath('//*[@id="usermenu"]/div/h6/a')
+        assert os.environ["TEST_FULLNAME"] in usermenu_fullname.text
+        self.close_usermenu()
+
     def close(self):
         self.driver.close()
 
@@ -163,6 +169,7 @@ class QvainTestCase(unittest.TestCase):
         multiselect.click()
         multiselect_content = elem.find_element_by_class_name("multiselect__content")
         multiselect_options = multiselect_content.find_elements_by_class_name("multiselect__element")
+        # TODO: this can fail when the network connection is not working properly. 
         for option in multiselect_options:
             if option.text.find(optionValue) > -1:
                 option.click()

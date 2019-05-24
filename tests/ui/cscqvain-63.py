@@ -22,18 +22,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-
 from qvaintestcase import QvainTestCase
 
 
 class CSCQVAIN63(QvainTestCase):
     def start_test(self):
         self.login()
-        # check that usermenu is visible
-        self.open_usermenu()
-        usermenu_fullname = self.driver.find_element_by_xpath('//*[@id="usermenu"]/div/h6/a')
-        assert os.environ["TEST_FULLNAME"] in usermenu_fullname.text
-        self.close_usermenu()
+        self.verify_that_user_is_logged_in()
 
     def end_test(self):
         self.logout()
