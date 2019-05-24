@@ -39,6 +39,25 @@ class QvainTestCase(unittest.TestCase):
         if self.start_test:
             self.start_test()
 
+    def start_memory_measure(self):
+        self.memory_usage_at_start = int(self.memory_usage())
+
+    def end_memory_measure(self):
+        currentMemoryUsage = int(self.memory_usage())
+        return currentMemoryUsage - self.memory_usage_at_start, currentMemoryUsage, self.memory_usage_at_start
+
+    def end_memory_measure_and_report(self):
+        memory_diff, memory_end, memory_start = self.end_memory_measure()
+        self.logger.info("\n{id} | JS Memory start: {start}Mb | end: {end}Mb | diff: {diff}Mb".format(
+            id=self.id(),
+            start=int(memory_start/1024/1024),
+            end=int(memory_end/1024/1024),
+            diff=int(memory_diff/1024/1024)
+        ))
+
+    def memory_usage(self):
+        return self.driver.execute_script("return window.performance.memory.usedJSHeapSize")
+
     def is_frontend_running(self):
         # This is the xpath for default error page header in nginx
         # We do not have such xpath in our frontend
@@ -182,6 +201,9 @@ class QvainTestCase(unittest.TestCase):
         elem.send_keys(text)
         elem.send_keys(Keys.TAB)
 
+    def find_element(self, elemId):
+        return self.driver.find_element_by_id(elemId)
+
     def open_dropdown(self, elemId):
         self.driver.find_element_by_id(elemId).find_element_by_class_name("dropdown-toggle").click()
 
@@ -212,29 +234,3 @@ class QvainTestCase(unittest.TestCase):
         # we did not find the option from the list
         raise NoSuchElementException("{option} was not found from {elem} ".format(option=optionValue, elem=elemId))
 
-
-    def publish_and_save_buttons(self, save, publish, bottom_visible):
-        saveButtons = []
-        publishButtons = []
-
-        saveButtons.append(self.driver.find_element_by_id("editor_button_save_top"))
-        publishButtons.append(self.driver.find_element_by_id("editor_button_publish_top"))
-
-        if bottom_visible:
-            publishButtons.append(self.driver.find_element_by_id("editor_button_publish_bottom"))
-            saveButtons.append(self.driver.find_element_by_id("editor_button_save_bottom"))
-        else:
-            assert self.elem_is_not_found("editor_button_publish_bottom"), "editor_button_publish_bottom was visible"
-            assert self.elem_is_not_found("editor_button_save_bottom"), "editor_button_save_bottom was visible"
-
-        for btn in saveButtons:
-            if save:
-                self.button_is_enabled(btn)
-            else:
-                self.button_is_disabled(btn)
-
-        for btn in publishButtons:
-            if publish:
-                self.button_is_enabled(btn)
-            else:
-                self.button_is_disabled(btn)
