@@ -23,6 +23,7 @@ from views.editor import Editor
 from views.datasets import Datasets
 
 
+
 class CSCQVAIN63(QvainTestCase):
     def start_test(self):
         self.login()
@@ -30,7 +31,7 @@ class CSCQVAIN63(QvainTestCase):
         self.start_memory_measure()
 
     def end_test(self):
-        self.end_memory_measure_and_report()
+        self.end_memory_measure_and_report("end_test")
         self.logout()
         self.close()
 
@@ -40,7 +41,9 @@ class CSCQVAIN63(QvainTestCase):
 
     def test_2_create_new_dataset(self):
         editor = Editor(self)
-        editor.show()
+        self.with_memory_usage("Editor page is shown",
+            editor.show
+        )
         editor.set_input_language("English", "en")
 
         # both buttons save and publish should be disabled
@@ -48,7 +51,10 @@ class CSCQVAIN63(QvainTestCase):
         editor.verify_publish_and_save_buttons(publish=False, save=False, bottom_visible=False)
 
         # select remote uri as schema
-        editor.select_schema("I want to link Remote resources")
+        self.with_memory_usage("Schema is selected",
+            editor.select_schema,
+            "I want to link Remote resources"
+        )
 
         # the bottom buttons should be now visible
         editor.verify_publish_and_save_buttons(publish=False, save=True, bottom_visible=True)
@@ -61,7 +67,9 @@ class CSCQVAIN63(QvainTestCase):
         editor.verify_publish_and_save_buttons(publish=False, save=True, bottom_visible=True)
 
         # lets save the data once
-        editor.save()
+        self.with_memory_usage("Data saved",
+            editor.save
+        )
 
         # the publish button should be still disabled
         # save buttons are enabled
@@ -71,34 +79,59 @@ class CSCQVAIN63(QvainTestCase):
         #### Enter all the details for required fields
 
         ## Content Description
-        editor.show_content_description_tab()
+        self.with_memory_usage("Content Description tab",
+            editor.show_content_description_tab
+        )
 
         # set title
-        editor.set_title("Hello Title")
+        self.with_memory_usage("Title is set",
+            editor.set_title,
+            "Hello Title"
+        )
 
         # set description
-        editor.set_description("A description for this test")
+        self.with_memory_usage("Description is set",
+            editor.set_description,
+            "A description for this test"
+        )
 
         # Save changes
-        editor.save()
+        self.with_memory_usage("Data is saved",
+            editor.save
+        )
 
         ## Actors
-        editor.show_actors_tab()
+        self.with_memory_usage("Actors tab",
+            editor.show_actors_tab
+        )
 
         # add then an organization
-        editor.set_creator_organization("Test Organization")
+        self.with_memory_usage("Organization is set",
+            editor.set_creator_organization,
+            "Test Organization"
+        )
 
         ## Rights and Licenses
-        editor.show_rights_and_licenses_tab()
+        self.with_memory_usage("Rights and licenses tab",
+            editor.show_rights_and_licenses_tab
+        )
 
         # add the required rights and licenses information
-        editor.set_access_rights_description("Test access rights description")
+        self.with_memory_usage("Access rights description is set",
+            editor.set_access_rights_description,
+            "Test access rights description"
+        )
 
         # set access type to Open
-        editor.set_access_type("Open")
+        self.with_memory_usage("Access type is set",
+            editor.set_access_type,
+            "Open"
+        )
 
         # then save
-        editor.save()
+        self.with_memory_usage("Data is saved",
+            editor.save
+        )
 
         # now the publish buttons are enabled and save button is disabled
         editor.verify_publish_and_save_buttons(publish=True, save=False, bottom_visible=True)

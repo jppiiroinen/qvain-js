@@ -30,7 +30,12 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 class QvainTestCase(unittest.TestCase):
     def setUp(self):
-        self.driver = webdriver.Chrome("./chromedriver")
+        opts = webdriver.ChromeOptions()
+        opts.add_argument("--js-flags=--expose-gc")
+        if not "TEST_DEBUG" in os.environ.keys():
+            opts.add_argument("--headless")
+        opts.add_argument("--enable-precise-memory-info")
+        self.driver = webdriver.Chrome("./chromedriver", options=opts)
         self.wait = WebDriverWait(self.driver, 10)
         self.logger = logging.getLogger()
         self.logger.level = logging.DEBUG
@@ -39,23 +44,47 @@ class QvainTestCase(unittest.TestCase):
         if self.start_test:
             self.start_test()
 
+    def with_memory_usage(self, description, fn, *args, **kwargs):
+        self.mark_memory_measure()
+        fn(*args, **kwargs)
+        self.diff_memory_measure_and_report(description)
+
     def start_memory_measure(self):
         self.memory_usage_at_start = int(self.memory_usage())
+
+    def end_memory_measure_and_report(self, msg=None):
+        memory_diff, memory_end, memory_start = self.end_memory_measure()
+        self.logger.info("\n{id} | {msg} | JS Memory start: {start}Kb | end: {end}Kb | diff: {diff}Kb".format(
+            id=self.id(),
+            msg=msg,
+            start=int(memory_start/1024),
+            end=int(memory_end/1024),
+            diff=int(memory_diff/1024)
+        ))
 
     def end_memory_measure(self):
         currentMemoryUsage = int(self.memory_usage())
         return currentMemoryUsage - self.memory_usage_at_start, currentMemoryUsage, self.memory_usage_at_start
 
-    def end_memory_measure_and_report(self):
-        memory_diff, memory_end, memory_start = self.end_memory_measure()
-        self.logger.info("\n{id} | JS Memory start: {start}Mb | end: {end}Mb | diff: {diff}Mb".format(
+    def mark_memory_measure(self):
+        self.memory_usage_at_mark = int(self.memory_usage())
+
+    def diff_memory_measure(self):
+        currentMemoryUsage = int(self.memory_usage())
+        return currentMemoryUsage - self.memory_usage_at_mark, currentMemoryUsage, self.memory_usage_at_mark
+
+    def diff_memory_measure_and_report(self, msg=None):
+        memory_diff, memory_end, memory_start = self.diff_memory_measure()
+        self.logger.info("\n{id} | {msg} | JS Memory start: {start}Kb | end: {end}Kb | diff: {diff}Kb".format(
             id=self.id(),
-            start=int(memory_start/1024/1024),
-            end=int(memory_end/1024/1024),
-            diff=int(memory_diff/1024/1024)
+            msg=msg,
+            start=int(memory_start/1024),
+            end=int(memory_end/1024),
+            diff=int(memory_diff/1024)
         ))
 
     def memory_usage(self):
+        self.driver.execute_script("window.gc()")
         return self.driver.execute_script("return window.performance.memory.usedJSHeapSize")
 
     def is_frontend_running(self):
@@ -218,18 +247,30 @@ class QvainTestCase(unittest.TestCase):
 
         # lets scan for the options which are available.
         multiselect_content = elem.find_element_by_class_name("multiselect__content")
-        multiselect_options = multiselect_content.find_elements_by_class_name("multiselect__element")
 
-        # this can fail when the network connection is not working properly.
-        # so lets ensure that we did get more than zero options
-        assert len(multiselect_options) > 0, "We did not find any options from the multiselect"
+        tries = 5
+        errors = []
+        while tries > 0:
+            tries -= 1
+            multiselect_options = multiselect_content.find_elements_by_class_name("multiselect__element")
 
-        # lets find the option from the list of found options
-        for option in multiselect_options:
-            if option.text.find(optionValue) > -1:
-                # once we found it we click on it
-                option.click()
-                return
+            # this can fail when the network connection is not working properly.
+            # so lets ensure that we did get more than zero options
+            if len(multiselect_options) == 0:
+                errors.append("We did not find any options from the multiselect")
+                time.sleep(1.0)
+                continue
+
+            # lets find the option from the list of found options
+            for option in multiselect_options:
+                if option.text.find(optionValue) > -1:
+                    # once we found it we click on it
+                    self.wait.until(EC.visibility_of(option))
+                    option.click()
+                    return
+
+            errors.append("Unable to find " + optionValue)
+            time.sleep(1.0)
 
         # we did not find the option from the list
         raise NoSuchElementException("{option} was not found from {elem} ".format(option=optionValue, elem=elemId))

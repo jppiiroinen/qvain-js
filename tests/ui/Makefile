@@ -19,4 +19,4 @@ clean:
 	rm chromedriver_*.zip
 
 check: .secrets venv chromedriver
-	$(PYTHON_CMD) cscqvain*.py
+	$(PYTHON_CMD) -m unittest discover
