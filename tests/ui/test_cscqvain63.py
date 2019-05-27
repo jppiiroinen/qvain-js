@@ -37,6 +37,24 @@ class CSCQVAIN63(QvainTestCase):
 
     def test_1_my_datasets(self):
         self.open_datasets_view()
+        
+        # TODO: create a new dataset
+        
+        # TODO: store the dataset id into variable
+        
+        # TODO: find element with id
+        # dataset-list__row_05897a12-191a-ead6-d3a2-18c9a3c535ea where
+        # that 05897a12-191a-ead6-d3a2-18c9a3c535ea is the dataset id
+
+        # TODO: if state is Draft then publish button should be enabled.
+        
+        # TODO: check if state is Unpublished Changes the
+        
+        # TODO: if published then there should not be Publish button
+        
+        # TODO: if published but the data has been changed, the state should be unpublished changes
+        #       and publish button should be visible.
+
         assert False, "TODO"
 
     def test_2_create_new_dataset(self):

@@ -20,3 +20,6 @@ clean:
 
 check: .secrets venv chromedriver
 	$(PYTHON_CMD) -m unittest discover
+
+my_datasets: .secrets venv chromedriver
+	$(PYTHON_CMD) -m unittest -k my_datasets
