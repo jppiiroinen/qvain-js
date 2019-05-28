@@ -26,16 +26,42 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 class QvainTestCase(unittest.TestCase):
     def setUp(self):
+        caps = DesiredCapabilities.CHROME.copy()
+        caps['loggingPrefs'] = {
+            'browser': 'ALL',
+            'performance' : 'ALL',
+            }
+
+
+        # This data can be processed, the logs for V8 with:
+        # chrome://tracing/
+        # and another useful place is
+        # chrome://memory-internals/
         opts = webdriver.ChromeOptions()
-        opts.add_argument("--js-flags=--expose-gc")
-        if not "TEST_DEBUG" in os.environ.keys():
-            opts.add_argument("--headless")
-        opts.add_argument("--enable-precise-memory-info")
-        self.driver = webdriver.Chrome("./chromedriver", options=opts)
+        opts.add_argument("--no-sandbox")
+        #opts.add_experimental_option('perfLoggingPrefs', {
+        #    'enableNetwork' : True,
+        #    'enablePage' : True,
+        #    'traceCategories': "browser,devtools.timeline,devtools",
+        #    })
+        opts.add_argument("--js-flags=--expose-gc") # --prof --track-gc-object-stats --trace-track-allocation-sites --log-all --heap-profiler-trace-objects --trace-detached-contexts --track-heap-object-fields --stack-trace-limit=10 --allow-natives-syntax --track-retaining-path --track_gc_object_stats --trace_gc_verbose --log_timer_events  --log-internal-timer-events --logfile=v8-%p.log")
+        #if not "TEST_DEBUG" in os.environ.keys():
+        #    opts.add_argument("--headless")
+        #opts.add_argument("--enable-precise-memory-info")
+        ##opts.add_argument("--trace-startup=disabled-by-default-memory-infra")
+        #opts.add_argument("--trace-startup-file=trace-%p.json")
+        #opts.add_argument("--trace-startup-duration=7")
+#        opts.add_argument("--disable-dev-shm-usage")
+        #opts.add_argument("--enable-heap-profiling=task-profiler")
+        #opts.add_argument("--profiling-flush")
+#        opts.add_experimental_option("useAutomationExtension", False);
+        opts.add_argument("--trace-config-file=trace.config")
+        self.driver = webdriver.Chrome("./chromedriver", options=opts, desired_capabilities=caps)
         self.wait = WebDriverWait(self.driver, 10)
         self.logger = logging.getLogger()
         self.logger.level = logging.DEBUG
