@@ -25,13 +25,19 @@ class Editor(object):
     def show(self):
         self.testcase.open_editor_view()
 
+    def close(self):
+        self.testcase.open_frontpage()
+
     def select_schema(self, schema):
         self.testcase.select_option("editor_select_schema", schema)
 
     def save(self):
         self.testcase.scroll_to_up()
         self.testcase.click_elem("editor_button_save_top")
+        # TODO: read the ID from the alert
+        dataset_id = self.testcase.get_alert_text()
         self.testcase.close_alert()
+        return dataset_id
 
     def show_content_description_tab(self):
         self.testcase.scroll_to_up()

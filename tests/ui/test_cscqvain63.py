@@ -37,14 +37,49 @@ class CSCQVAIN63(QvainTestCase):
 
     def test_1_my_datasets(self):
         self.open_datasets_view()
-        
-        # TODO: create a new dataset
-        
+
+        # ensure that the test datasets does not exist before create.
+        datasets = Datasets(self)
+        datasets.show()
+        test_datasets = [
+            "test_1_my_datasets_valid_unpublished",
+            "test_1_my_datasets_invalid_unpublished"
+        ]
+        for test_dataset in test_datasets:
+            if datasets.exists(test_dataset):
+                datasets.remove(test_dataset)
+        datasets.close()
+            
+        ## create a new dataset
+        # valid dataset, unpublished
+        editor = Editor(self)
+        editor.show()
+        editor.select_schema("I want to link Remote resources")
+        editor.show_content_description_tab()
+        editor.set_title("test_1_my_datasets_valid_unpublished")
+        editor.set_description("dataset description")
+        editor.show_actors_tab()
+        editor.set_creator_organization("Test Organization")
+        editor.show_rights_and_licenses_tab()
+        editor.set_access_rights_description("Test Access Rights Description")
+        editor.set_access_type("Open")
+        test_1_my_datasets_valid_unpublished_id = editor.save()
+        editor.close()
+
+        # invalid dataset, unpublished
+        editor.show()
+        editor.select_schema("I want to link Remote resources")
+        editor.show_content_description_tab()
+        editor.set_title("test_1_my_datasets_invalid_unpublished")
+        editor.set_description("dataset description")
+        test_1_my_datasets_invalid_unpublished_id = editor.save()
+        editor.close()
+
         # TODO: store the dataset id into variable
         
         # TODO: find element with id
-        # dataset-list__row_05897a12-191a-ead6-d3a2-18c9a3c535ea where
-        # that 05897a12-191a-ead6-d3a2-18c9a3c535ea is the dataset id
+        #       dataset-list__row_05897a12-191a-ead6-d3a2-18c9a3c535ea where
+        #       that 05897a12-191a-ead6-d3a2-18c9a3c535ea is the dataset id
 
         # TODO: if state is Draft then publish button should be enabled.
         
@@ -149,6 +184,10 @@ class CSCQVAIN63(QvainTestCase):
         # then save
         self.with_memory_usage("Data is saved",
             editor.save
+        )
+
+        self.with_memory_usage("Editor view is closed",
+            editor.close
         )
 
         # now the publish buttons are enabled and save button is disabled

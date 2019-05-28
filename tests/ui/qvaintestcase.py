@@ -136,6 +136,7 @@ class QvainTestCase(unittest.TestCase):
         userDropdown.click()
 
     def open_datasets_view(self):
+        self.open_frontpage()
         # lets tap the navigation bar where we should see the link
         myDatasetsLink = self.driver.find_element_by_link_text("My Datasets")
         myDatasetsLink.click()
@@ -144,7 +145,12 @@ class QvainTestCase(unittest.TestCase):
         header = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@class="component-title"]')))
         assert 'My datasets' in header.text, "We are not in My datasets view, it seems that we are in {header}".format(header=header.text)
 
+    def open_frontpage(self):
+        appTopBarImage = self.driver.find_element_by_xpath('//*[@id="app-topbar"]/a/img')
+        appTopBarImage.click()
+
     def open_editor_view(self):
+        self.open_frontpage()
         self.open_datasets_view()
 
         # lets tap on the create new record button
