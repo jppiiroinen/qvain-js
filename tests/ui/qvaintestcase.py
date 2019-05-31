@@ -9,7 +9,6 @@
 #     Juhapekka Piiroinen <juhapekka.piiroinen@csc.fi>
 #
 # Copyright 2019 CSC - IT Center for Science Ltd.
-# Copyright 2019 The National Library Of Finland
 # All Rights Reserved.
 ################################################################
 
@@ -50,9 +49,9 @@ class QvainTestCase(unittest.TestCase):
         #    'traceCategories': "browser,devtools.timeline,devtools",
         #    })
         opts.add_argument("--js-flags=--expose-gc") # --prof --track-gc-object-stats --trace-track-allocation-sites --log-all --heap-profiler-trace-objects --trace-detached-contexts --track-heap-object-fields --stack-trace-limit=10 --allow-natives-syntax --track-retaining-path --track_gc_object_stats --trace_gc_verbose --log_timer_events  --log-internal-timer-events --logfile=v8-%p.log")
-        #if not "TEST_DEBUG" in os.environ.keys():
-        #    opts.add_argument("--headless")
-        #opts.add_argument("--enable-precise-memory-info")
+        if not "TEST_DEBUG" in os.environ.keys():
+            opts.add_argument("--headless")
+        opts.add_argument("--enable-precise-memory-info")
         ##opts.add_argument("--trace-startup=disabled-by-default-memory-infra")
         #opts.add_argument("--trace-startup-file=trace-%p.json")
         #opts.add_argument("--trace-startup-duration=7")
@@ -60,7 +59,7 @@ class QvainTestCase(unittest.TestCase):
         #opts.add_argument("--enable-heap-profiling=task-profiler")
         #opts.add_argument("--profiling-flush")
 #        opts.add_experimental_option("useAutomationExtension", False);
-        opts.add_argument("--trace-config-file=trace.config")
+        #opts.add_argument("--trace-config-file=trace.config")
         self.driver = webdriver.Chrome("./chromedriver", options=opts, desired_capabilities=caps)
         self.wait = WebDriverWait(self.driver, 10)
         self.logger = logging.getLogger()
@@ -161,31 +160,13 @@ class QvainTestCase(unittest.TestCase):
         userDropdown = self.driver.find_element_by_id("usermenu")
         userDropdown.click()
 
-    def open_datasets_view(self):
-        self.open_frontpage()
-        # lets tap the navigation bar where we should see the link
-        myDatasetsLink = self.driver.find_element_by_link_text("My Datasets")
-        myDatasetsLink.click()
-
-        # lets wait until the page has been loaded
-        header = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@class="component-title"]')))
-        assert 'My datasets' in header.text, "We are not in My datasets view, it seems that we are in {header}".format(header=header.text)
-
     def open_frontpage(self):
-        appTopBarImage = self.driver.find_element_by_xpath('//*[@id="app-topbar"]/a/img')
-        appTopBarImage.click()
-
-    def open_editor_view(self):
-        self.open_frontpage()
-        self.open_datasets_view()
-
-        # lets tap on the create new record button
-        createNewDataset = self.driver.find_element_by_id('datasets_button_create-new-record')
-        createNewDataset.click()
-
-        # we should end up into new dataset page
-        header = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@class="component-title"]')))
-        assert 'Dataset' in header.text, "We are not in Dataset view, it seems that we are in {header}".format(header=header.text)
+        ## The top does not actually get you to the frontpage
+        # appTopBarImage = self.driver.find_element_by_xpath('//*[@id="app-topbar"]/a/img')
+        # appTopBarImage.click()
+        self.driver.get(os.environ["TEST_ADDRESS"])
+        self.is_frontend_running()
+        self.wait.until(EC.title_is("Qvain"))
 
     def logout(self):
         self.open_usermenu()
@@ -245,6 +226,15 @@ class QvainTestCase(unittest.TestCase):
         close_alert_btn = self.wait.until(EC.presence_of_element_located((By.ID, 'root_alert'))).find_element_by_class_name("close")
         close_alert_btn.click()
 
+    def get_alert_text(self):
+        #<div role="alert" aria-live="polite" aria-atomic="true" class="alert alert-primary alert-dismissible" id="root_alert" style="z-index: 1000; position: fixed; top: 1rem; left: 0px; right: 0px; width: 90%; margin: 0px auto; opacity: 0.9;">
+        # <button type="button" aria-label="Close" class="close">×</button>
+        # <p>Dataset successfully saved</p>
+        #</div>
+        #
+        alertTextElem = self.wait.until(EC.presence_of_element_located((By.ID, 'root_alert'))).find_element_by_css_selector("p")
+        return alertTextElem.text
+
     def click_elem(self, elemId):
         self.driver.find_element_by_id(elemId).click()
 
@@ -256,6 +246,10 @@ class QvainTestCase(unittest.TestCase):
         selectBox = Select(self.driver.find_element_by_id(elemId))
         return option in selectBox.first_selected_option.text
 
+    def ensure_view_title(self, title, error_msg):
+        header = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@class="component-title"]')))
+        assert title in header.text, error_msg.format(header=header.text)
+
     def enter_text(self, elemId, text):
         elem = self.driver.find_element_by_id(elemId)
         elem.click()
@@ -263,7 +257,10 @@ class QvainTestCase(unittest.TestCase):
         elem.send_keys(Keys.TAB)
 
     def find_element(self, elemId):
-        return self.driver.find_element_by_id(elemId)
+        return self.wait.until(EC.presence_of_element_located((By.ID, elemId)))
+
+    def find_element_by_text(self, text):
+        return self.driver.find_element_by_link_text(text)
 
     def open_dropdown(self, elemId):
         self.driver.find_element_by_id(elemId).find_element_by_class_name("dropdown-toggle").click()

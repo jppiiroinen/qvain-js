@@ -8,14 +8,16 @@
 #     Juhapekka Piiroinen <juhapekka.piiroinen@csc.fi>
 #
 # Copyright 2019 CSC - IT Center for Science Ltd.
-# Copyright 2019 The National Library Of Finland
 # All Rights Reserved.
 ################################################################
+
+from .datasets import Datasets
 
 
 class Editor(object):
     def __init__(self, testcase):
         self.testcase = testcase
+        self.dataset_id = None
         self.set_input_language()
 
     def set_input_language(self, language="English", language_short="en"):
@@ -23,9 +25,21 @@ class Editor(object):
         self.language_short = language_short
 
     def show(self):
-        self.testcase.open_editor_view()
+        self.testcase.open_frontpage()
+        datasets = Datasets(self.testcase)
+        datasets.show()
+
+        # lets tap on the create new record button
+        self.testcase.find_element('datasets_button_create-new-record').click()
+
+        # we should end up into new dataset page
+        self.testcase.ensure_view_title(
+            title="Dataset",
+            error_msg="We are not in Dataset view, it seems that we are in {header}"
+        )
 
     def close(self):
+        self.dataset_id = None
         self.testcase.open_frontpage()
 
     def select_schema(self, schema):
@@ -34,10 +48,19 @@ class Editor(object):
     def save(self):
         self.testcase.scroll_to_up()
         self.testcase.click_elem("editor_button_save_top")
-        # TODO: read the ID from the alert
-        dataset_id = self.testcase.get_alert_text()
+        # If this is a save of an old item then the message is
+        #  "Dataset successfully saved"
+        # if this is a new save then the message is
+        #  "Success! Created as 0589ec6d4452eeae99c0647346f98e40"
+        alert_text = self.testcase.get_alert_text()
+        resave = True
+        if (alert_text.find("Created as") != -1):
+            self.testcase.print("was a new save")
+            self.dataset_id = alert_text.replace("Success! Created as ","")
+            resave = False
+        self.testcase.print(alert_text)
         self.testcase.close_alert()
-        return dataset_id
+        return self.dataset_id, resave
 
     def show_content_description_tab(self):
         self.testcase.scroll_to_up()

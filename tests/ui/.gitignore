@@ -4,3 +4,4 @@ chromedriver*.zip
 *.log
 __pycache__
 .secrets
+*.json
