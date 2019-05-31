@@ -43,8 +43,9 @@ class CSCQVAIN63(QvainTestCase):
             "test_1_my_datasets_invalid_unpublished"
         ]
         for test_dataset in test_datasets:
-            if datasets.exists(test_dataset):
-                datasets.remove(test_dataset)
+            dataset_ids = datasets.search(test_dataset)
+            for dataset_id in dataset_ids:
+                datasets.remove(dataset_id)
         datasets.close()
         
         ## create a new dataset

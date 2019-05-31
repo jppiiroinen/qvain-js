@@ -11,10 +11,13 @@
 # All Rights Reserved.
 ################################################################
 
+import time
+
 
 class Datasets(object):
     def __init__(self, testcase):
         self.testcase = testcase
+        self.retries = 0
         self.set_input_language()
     
     def close(self):
@@ -30,8 +33,30 @@ class Datasets(object):
     def remove_all(self):
         pass # TODO
 
-    def exists(self, title):
-        return self.testcase.find_element_by_text(title)
+    def search(self, title):
+        # get the list of rows
+        dataset_list = self.testcase.find_element("dataset-list")
+        dataset_rows = dataset_list.find_elements_by_css_selector("tbody > tr")
+
+        # we need to cancel the special case when the data is loading
+        # there is an UI issue where "There are no records to show" is shown.
+        if len(dataset_rows) == 1:
+            if self.retries > 5:
+                self.retries = 0
+                return False
+            time.sleep(1)
+            self.retries += 1
+            return self.search(title)
+
+        # lets see those titles if we can find any
+        found = []
+        for row in dataset_rows:
+            if row.find_elements_by_css_selector("td")[1].find_element_by_css_selector("h5").text == title:
+                found.append(row.get_attribute("id").replace("dataset-list__row_", ""))
+        return found
+
+    def exists(self, dataset_id):
+        return self.testcase.elem_is_not_found("dataset-list__row_{id}".format(id=dataset_id))
 
     def remove(self, dataset_id):
         self.testcase.print("Requested removal of {id}".format(id=dataset_id))
@@ -56,3 +81,5 @@ class Datasets(object):
             title='My datasets',
             error_msg="We are not in My datasets view, it seems that we are in {header}"
         )
+
+        
