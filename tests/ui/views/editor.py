@@ -55,10 +55,8 @@ class Editor(object):
         alert_text = self.testcase.get_alert_text()
         resave = True
         if (alert_text.find("Created as") != -1):
-            self.testcase.print("was a new save")
             self.dataset_id = alert_text.replace("Success! Created as ","")
             resave = False
-        self.testcase.print(alert_text)
         self.testcase.close_alert()
         return self.dataset_id, resave
 

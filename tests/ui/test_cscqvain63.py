@@ -63,7 +63,6 @@ class CSCQVAIN63(QvainTestCase):
         editor.set_access_rights_description("Test Access Rights Description")
         editor.set_access_type("Open")
         (test_1_my_datasets_valid_unpublished_id, was_resave) = editor.save()
-        self.print(test_1_my_datasets_valid_unpublished_id)
         assert was_resave == False, "Expected to see first time save"
         self.diff_memory_measure_and_report("created valid unpublished dataset")
         editor.close()
@@ -77,25 +76,25 @@ class CSCQVAIN63(QvainTestCase):
         editor.set_description("dataset description")
         (test_1_my_datasets_invalid_unpublished_id, was_resave) = editor.save()
         assert was_resave == False, "Expected to see first time save"
-        #editor_unpublished.close()
         self.diff_memory_measure_and_report("created invalid unpublished dataset")
 
-        # TODO: store the dataset id into variable
-        
-        # TODO: find element with id
-        #       dataset-list__row_05897a12-191a-ead6-d3a2-18c9a3c535ea where
-        #       that 05897a12-191a-ead6-d3a2-18c9a3c535ea is the dataset id
+        # test that the buttons are shown correctly and that the status is correct
+        datasets.show()
+        dataset_ids = datasets.search("test_1_my_datasets_invalid_unpublished")
+        assert len(dataset_ids) == 1, "There should be only one test_1_my_datasets_invalid_unpublished"
 
-        # TODO: if state is Draft then publish button should be enabled.
-        
-        # TODO: check if state is Unpublished Changes the
-        
+        # the unpublished dataset should have Publish button enabled
+        assert datasets.is_publish_visible(test_1_my_datasets_invalid_unpublished_id), "Publish button should be visible for {id}".format(id=test_1_my_datasets_invalid_unpublished_id)
+
+        # if state is Draft then publish button should be enabled.
+        assert datasets.is_draft(test_1_my_datasets_invalid_unpublished_id), "It seems that state is other than draft for {id}".format(id=test_1_my_datasets_invalid_unpublished_id)
+       
         # TODO: if published then there should not be Publish button
         
         # TODO: if published but the data has been changed, the state should be unpublished changes
         #       and publish button should be visible.
 
-        #assert False, "TODO"
+        assert False, "TODO"
 
     def test_2_create_new_dataset(self):
         editor = Editor(self)

@@ -226,6 +226,9 @@ class QvainTestCase(unittest.TestCase):
         close_alert_btn = self.wait.until(EC.presence_of_element_located((By.ID, 'root_alert'))).find_element_by_class_name("close")
         close_alert_btn.click()
 
+    def wait_until_clickable_by_class(self, parent, class_name):
+        return self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, class_name)))
+
     def get_alert_text(self):
         #<div role="alert" aria-live="polite" aria-atomic="true" class="alert alert-primary alert-dismissible" id="root_alert" style="z-index: 1000; position: fixed; top: 1rem; left: 0px; right: 0px; width: 90%; margin: 0px auto; opacity: 0.9;">
         # <button type="button" aria-label="Close" class="close">×</button>
