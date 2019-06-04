@@ -42,7 +42,7 @@
 		<b-alert variant="danger" :show="!!error" dismissible @dismissed="error=null"><i class="fas fa-ban"></i> API error: {{ error }}</b-alert>
 		<b-alert variant="warning"><font-awesome-icon icon="info"></font-awesome-icon> Publishing: I understand that publishing this dataset:</b-alert>
 
-		<b-card variant="dark" bg-variant="dark" text-variant="white" v-if="showPublishConfirmation">
+		<b-card id="publish-verification-card" variant="dark" bg-variant="dark" text-variant="white" v-if="showPublishConfirmation">
 			<h3 slot="title">
 				<font-awesome-icon icon="info" fixed-width />
 				Publishing
@@ -54,9 +54,9 @@
 				</ul>
 			<p></p>
 			<div class="float-right">
-				<b-button variant="outline-light" class="ml-3" @click="showPublishConfirmation = false"><font-awesome-icon icon="times" fixed-width /> cancel</b-button>
-				<b-button variant="danger" class="ml-3" @click="showPublishConfirmation = false" v-if="false"><font-awesome-icon icon="info" fixed-width /> help</b-button>
-				<b-button variant="success" :disabled="saving" class="ml-3" @click="publish()"><font-awesome-icon icon="cloud-upload-alt" fixed-width /> publish</b-button>
+				<b-button id="publish-verification-card-button-cancel" variant="outline-light" class="ml-3" @click="showPublishConfirmation = false"><font-awesome-icon icon="times" fixed-width /> cancel</b-button>
+				<b-button id="publish-verification-card-button-help" variant="danger" class="ml-3" @click="showPublishConfirmation = false" v-if="false"><font-awesome-icon icon="info" fixed-width /> help</b-button>
+				<b-button id="publish-verification-card-button-publish" variant="success" :disabled="saving" class="ml-3" @click="publish()"><font-awesome-icon icon="cloud-upload-alt" fixed-width /> publish</b-button>
 			</div>
 		</b-card>
 

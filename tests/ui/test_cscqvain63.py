@@ -110,13 +110,13 @@ class CSCQVAIN63(QvainTestCase):
         datasets.edit(test_1_my_datasets_valid_unpublished_id)
 
         # publish that dataset
-        assert editor.publish()
+        assert editor.publish(), "Publish was failed"
         test_1_my_datasets_valid_published_id = test_1_my_datasets_valid_unpublished_id
 
         # if published then there should not be Publish button
         datasets.show()
         datasets.scroll_list_to(test_1_my_datasets_valid_published_id)
-        assert datasets.is_published(test_1_my_datasets_valid_published_id), "The state should be Published for {id}".format(id=test_1_my_datasets_valid_published_id)
+        assert datasets.is_published(test_1_my_datasets_valid_published_id), "The state should be Published for {id}, but was {state}".format(id=test_1_my_datasets_valid_published_id, state=datasets.get_state(test_1_my_datasets_valid_published_id))
         assert not datasets.is_publish_visible(test_1_my_datasets_valid_published_id), "Publish button should be hidden for {id}".format(id=test_1_my_datasets_valid_published_id)
 
         # edit the same dataset
@@ -132,7 +132,7 @@ class CSCQVAIN63(QvainTestCase):
         # and publish button should be visible.
         datasets.show()
         datasets.scroll_list_to(test_1_my_datasets_valid_published_id)
-        assert datasets.is_pending_changes(test_1_my_datasets_valid_published_id), "The state should be Pending Changes {id}".format(id=test_1_my_datasets_valid_published_id)
+        assert datasets.is_pending_changes(test_1_my_datasets_valid_published_id), "The state should be Pending Changes {id}, but was {state}".format(id=test_1_my_datasets_valid_published_id, state=datasets.get_state(test_1_my_datasets_valid_published_id))
         assert datasets.is_publish_visible(test_1_my_datasets_valid_published_id), "Publish button should be visible for {id}".format(id=test_1_my_datasets_valid_published_id)
 
 

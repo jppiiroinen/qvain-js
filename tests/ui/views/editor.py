@@ -57,6 +57,8 @@ class Editor(object):
         if (alert_text.find("Created as") != -1):
             self.dataset_id = alert_text.replace("Success! Created as ","")
             resave = False
+        self.testcase.print(alert_text)
+
         self.testcase.close_alert()
         return self.dataset_id, resave
 
@@ -120,8 +122,18 @@ class Editor(object):
 
     def publish(self):
         self.testcase.scroll_to_up()
-        self.testcase.click_elem("editor_button_publish_top")
+        btn = self.testcase.find_element("editor_button_publish_top")
+        btn.click()
+
+        # verify that a confirmation was opened
+        self.testcase.wait_until_visible("publish-verification-card")
+
+        # click on the Publish button which is on the confirmation
+        verification_btn = self.testcase.find_element("publish-verification-card-button-publish")
+        verification_btn.click()
+
         alert_text = self.testcase.get_alert_text()
+        self.testcase.print(alert_text)
         self.testcase.close_alert()
         return alert_text.find("Dataset successfully published") != -1
 
