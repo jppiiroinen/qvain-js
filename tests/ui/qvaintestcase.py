@@ -259,6 +259,9 @@ class QvainTestCase(unittest.TestCase):
         elem.send_keys(text)
         elem.send_keys(Keys.TAB)
 
+    def clear_text(self, elemId):
+        self.driver.find_element_by_id(elemId).clear()
+
     def find_element(self, elemId):
         return self.wait.until(EC.presence_of_element_located((By.ID, elemId)))
 

@@ -74,15 +74,19 @@ class Editor(object):
 
     def set_title(self, title):
         self.testcase.select_option("title_language-select", self.language)
+        elemId = "title_{language_short}_input".format(language_short=self.language_short)
+        self.testcase.clear_text(elemId)
         self.testcase.enter_text(
-            "title_{language_short}_input".format(language_short=self.language_short),
+            elemId,
             title
         )
 
     def set_description(self, description):
         self.testcase.select_option("description_language-select", self.language)
+        elemId = "description_textarea-{language_short}".format(language_short=self.language_short)
+        self.testcase.clear_text(elemId)
         self.testcase.enter_text(
-            "description_textarea-{language_short}".format(language_short=self.language_short),
+            elemId,
             description
         )
 
@@ -94,12 +98,16 @@ class Editor(object):
         self.testcase.open_dropdown("creator_array_0_object")
         self.testcase.select_dropdown_option("creator_array_0_object", "Organization")
         self.testcase.select_option("name_language-select", self.language)
-        self.testcase.enter_text("name_{language_short}_input".format(language_short=self.language_short), organizationName)
+        elemId = "name_{language_short}_input".format(language_short=self.language_short)
+        self.testcase.clear_text(elemId)
+        self.testcase.enter_text(elemId, organizationName)
 
     def set_access_rights_description(self, accessRightsDescription):
         access_rights_object = self.testcase.find_element("access_rights_object")
         self.testcase.select_option("description_language-select", self.language)
-        self.testcase.enter_text("description_{language_short}_input".format(language_short=self.language_short), accessRightsDescription)
+        elemId = "description_{language_short}_input".format(language_short=self.language_short)
+        self.testcase.clear_text(elemId)
+        self.testcase.enter_text(elemId, accessRightsDescription)
 
     def set_access_type(self, access_type):
         self.testcase.select_option_from_multiselect("access_type_object", "Open")
@@ -109,6 +117,13 @@ class Editor(object):
                     "editor_select_owner",
                     owner
                 ), "The currently logged in user is not marked as owner of the dataset."
+
+    def publish(self):
+        self.testcase.scroll_to_up()
+        self.testcase.click_elem("editor_button_publish_top")
+        alert_text = self.testcase.get_alert_text()
+        self.testcase.close_alert()
+        return alert_text.find("Dataset successfully published") != -1
 
     def verify_publish_and_save_buttons(self, save, publish, bottom_visible):
         saveButtons = []

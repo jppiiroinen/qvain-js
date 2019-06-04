@@ -12,6 +12,7 @@
 ################################################################
 
 import time
+import uuid
 
 
 class Datasets(object):
@@ -34,14 +35,29 @@ class Datasets(object):
         pass # TODO
 
     def is_publish_visible(self, dataset_id):
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
         row = self.testcase.find_element("dataset-list__row_{id}".format(id=dataset_id))
         actions_td = row.find_elements_by_css_selector("td")[4]
         # TODO: there is no ID or anything for the buttons in actions.
         return actions_td.find_elements_by_class_name("btn")[1].text == "Publish"
 
     def is_draft(self, dataset_id):
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
         row = self.testcase.find_element("dataset-list__row_{id}".format(id=dataset_id))
         return row.find_elements_by_css_selector("td")[0].find_element_by_css_selector("p").text.find("Draft") != -1
+
+    def is_pending_changes(self, dataset_id):
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
+        row = self.testcase.find_element("dataset-list__row_{id}".format(id=dataset_id))
+        return row.find_elements_by_css_selector("td")[0].find_element_by_css_selector("p").text.find("Pending Changes") != -1
+
+    def workaround_cscqvain_171(self, dataset_id):
+        return str(uuid.UUID(dataset_id))
+
+    def is_published(self, dataset_id):
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
+        row = self.testcase.find_element("dataset-list__row_{id}".format(id=dataset_id))
+        return row.find_elements_by_css_selector("td")[0].find_element_by_css_selector("p").text.find("Published") != -1
 
     def search(self, title):
         # get the list of rows
@@ -66,9 +82,11 @@ class Datasets(object):
         return found
 
     def exists(self, dataset_id):
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
         return self.testcase.elem_is_not_found("dataset-list__row_{id}".format(id=dataset_id))
 
     def remove(self, dataset_id):
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
         # find the correct row and the actions cell
         row = self.testcase.find_element("dataset-list__row_{id}".format(id=dataset_id))
         actions_td = row.find_elements_by_css_selector("td")[4]
@@ -103,13 +121,22 @@ class Datasets(object):
         self.testcase.close_alert()
 
     def edit(self, dataset_id):
-        pass # TODO
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
+        row = self.testcase.find_element("dataset-list__row_{id}".format(id=dataset_id))
+        actions_td = row.find_elements_by_css_selector("td")[4]
+        # TODO: there is no ID or anything for the buttons in actions.
+        return actions_td.find_elements_by_class_name("btn")[0].text == "Edit"
 
     def view_in_etsin(self, dataset_id):
         pass # TODO
 
     def list_all(self):
         pass # TODO
+    
+    def scroll_list_to(self, dataset_id):
+        dataset_id = self.workaround_cscqvain_171(dataset_id)
+        row = self.testcase.find_element("dataset-list__row_{id}".format(id=dataset_id))
+        self.testcase.scroll_to_element(row)
 
     def show(self):
         self.testcase.open_frontpage()

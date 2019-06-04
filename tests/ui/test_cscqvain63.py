@@ -80,21 +80,61 @@ class CSCQVAIN63(QvainTestCase):
 
         # test that the buttons are shown correctly and that the status is correct
         datasets.show()
+
+        # we need to do a workaround for the loading bug
+        retries = 0
+        while retries < 5:
+            if (self.elem_is_not_found("test_1_my_datasets_invalid_unpublished")):
+                break
+            time.sleep(0.5)
+            retries += 1
+        assert retries < 5, "The datasets could not be loaded"
+
         dataset_ids = datasets.search("test_1_my_datasets_invalid_unpublished")
         assert len(dataset_ids) == 1, "There should be only one test_1_my_datasets_invalid_unpublished"
 
-        # the unpublished dataset should have Publish button enabled
-        assert datasets.is_publish_visible(test_1_my_datasets_invalid_unpublished_id), "Publish button should be visible for {id}".format(id=test_1_my_datasets_invalid_unpublished_id)
+        # ensure that publish button is visible for both unpublished cases
+        test_ids = [ test_1_my_datasets_valid_unpublished_id, test_1_my_datasets_invalid_unpublished_id ]
+        for test_id in test_ids:
+            self.print(test_id)
+            # scroll to the item
+            datasets.scroll_list_to(test_id)
 
-        # if state is Draft then publish button should be enabled.
-        assert datasets.is_draft(test_1_my_datasets_invalid_unpublished_id), "It seems that state is other than draft for {id}".format(id=test_1_my_datasets_invalid_unpublished_id)
-       
-        # TODO: if published then there should not be Publish button
+            # if state is Draft then publish button should be enabled.
+            assert datasets.is_draft(test_id), "It seems that state is other than draft for {id}".format(id=test_id)
+
+            # the unpublished dataset should have Publish button enabled
+            assert datasets.is_publish_visible(test_id), "Publish button should be visible for {id}".format(id=test_id)
         
-        # TODO: if published but the data has been changed, the state should be unpublished changes
-        #       and publish button should be visible.
+        # edit one dataset
+        datasets.edit(test_1_my_datasets_valid_unpublished_id)
 
-        assert False, "TODO"
+        # publish that dataset
+        assert editor.publish()
+        test_1_my_datasets_valid_published_id = test_1_my_datasets_valid_unpublished_id
+
+        # if published then there should not be Publish button
+        datasets.show()
+        datasets.scroll_list_to(test_1_my_datasets_valid_published_id)
+        assert datasets.is_published(test_1_my_datasets_valid_published_id), "The state should be Published for {id}".format(id=test_1_my_datasets_valid_published_id)
+        assert not datasets.is_publish_visible(test_1_my_datasets_valid_published_id), "Publish button should be hidden for {id}".format(id=test_1_my_datasets_valid_published_id)
+
+        # edit the same dataset
+        datasets.edit(test_1_my_datasets_valid_published_id)
+
+        editor.set_description("a changed description")
+
+        # just save, no publish
+        editor.save()
+        test_1_my_datasets_valid_published_pending_changes_id = test_1_my_datasets_valid_published_id
+
+        # if published but the data has been changed, the state should be unpublished changes
+        # and publish button should be visible.
+        datasets.show()
+        datasets.scroll_list_to(test_1_my_datasets_valid_published_id)
+        assert datasets.is_pending_changes(test_1_my_datasets_valid_published_id), "The state should be Pending Changes {id}".format(id=test_1_my_datasets_valid_published_id)
+        assert datasets.is_publish_visible(test_1_my_datasets_valid_published_id), "Publish button should be visible for {id}".format(id=test_1_my_datasets_valid_published_id)
+
 
     def test_2_create_new_dataset(self):
         editor = Editor(self)
