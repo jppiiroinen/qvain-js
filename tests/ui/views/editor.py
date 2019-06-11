@@ -57,7 +57,7 @@ class Editor(object):
         if (alert_text.find("Created as") != -1):
             self.dataset_id = alert_text.replace("Success! Created as ","")
             resave = False
-        self.testcase.print(alert_text)
+        #self.testcase.print(alert_text)
 
         self.testcase.close_alert()
         return self.dataset_id, resave
@@ -132,9 +132,17 @@ class Editor(object):
         verification_btn = self.testcase.find_element("publish-verification-card-button-publish")
         verification_btn.click()
 
+        # wait until the alert appears
         alert_text = self.testcase.get_alert_text()
-        self.testcase.print(alert_text)
+
+        # check that there are no failure dialogs visible
+        if self.testcase.is_element_visible("publish-modal"):
+            return False
+
+        # close the alert
+        #self.testcase.print(alert_text)
         self.testcase.close_alert()
+
         return alert_text.find("Dataset successfully published") != -1
 
     def verify_publish_and_save_buttons(self, save, publish, bottom_visible):

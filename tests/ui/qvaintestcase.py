@@ -17,25 +17,31 @@ import sys
 import logging
 import unittest
 import time
+import json
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 class QvainTestCase(unittest.TestCase):
     def setUp(self):
+        self.memory_usage_at_start = None
+        self.test_events = []
+        self.start_time = int(time.time())
+        self.netlogfile = "{testcase}-{testmethod}-{timestamp}-networktraffic.json".format(timestamp=self.start_time, testcase=self.__class__.__name__, testmethod=self._testMethodName)
+        self.netlogfiles.append(self.netlogfile)
+
         caps = DesiredCapabilities.CHROME.copy()
         caps['loggingPrefs'] = {
             'browser': 'ALL',
             'performance' : 'ALL',
             }
-
 
         # This data can be processed, the logs for V8 with:
         # chrome://tracing/
@@ -52,6 +58,10 @@ class QvainTestCase(unittest.TestCase):
         if not "TEST_DEBUG" in os.environ.keys():
             opts.add_argument("--headless")
         opts.add_argument("--enable-precise-memory-info")
+        opts.add_argument("--log-net-log={netlogfile}".format(netlogfile=self.netlogfile))
+        opts.add_argument("--net-log-capture-mode=IncludeSocketBytes")
+        #opts.add_argument("--net-log-capture-mode=IncludeCookiesAndCredentials")
+
         ##opts.add_argument("--trace-startup=disabled-by-default-memory-infra")
         #opts.add_argument("--trace-startup-file=trace-%p.json")
         #opts.add_argument("--trace-startup-duration=7")
@@ -60,53 +70,64 @@ class QvainTestCase(unittest.TestCase):
         #opts.add_argument("--profiling-flush")
 #        opts.add_experimental_option("useAutomationExtension", False);
         #opts.add_argument("--trace-config-file=trace.config")
+        self.test_start_time = time.time() + 1.25
         self.driver = webdriver.Chrome("./chromedriver", options=opts, desired_capabilities=caps)
         self.wait = WebDriverWait(self.driver, 10)
-        self.logger = logging.getLogger()
-        self.logger.level = logging.DEBUG
-        self.stream_handler = logging.StreamHandler(sys.stdout)
-        self.logger.addHandler(self.stream_handler)
-        if self.start_test:
-            self.start_test()
 
     def with_memory_usage(self, description, fn, *args, **kwargs):
-        self.mark_memory_measure()
+        self.mark_memory_measure(description)
         fn(*args, **kwargs)
         self.diff_memory_measure_and_report(description)
 
-    def start_memory_measure(self):
+    def start_memory_measure(self, description=None):
+        if not description:
+            description = "BEGIN"
+        timestamp = time.time() - self.test_start_time
         self.memory_usage_at_start = int(self.memory_usage())
-
-    def end_memory_measure_and_report(self, msg=None):
-        memory_diff, memory_end, memory_start = self.end_memory_measure()
-        self.logger.info("\n{id} | {msg} | JS Memory start: {start}Kb | end: {end}Kb | diff: {diff}Kb".format(
+        self.test_events.append((timestamp, "{id} | {msg}".format(
             id=self.id(),
-            msg=msg,
+            msg=description
+        )))
+
+    def end_memory_measure_and_report(self, description=None):
+        if not description:
+            description = "END"
+        timestamp = time.time() - self.test_start_time
+        memory_diff, memory_end, memory_start = self.end_memory_measure()
+        self.test_events.append((timestamp, "{id} | {msg} | JS Memory start: {start}Kb | end: {end}Kb | diff: {diff}Kb".format(
+            id=self.id(),
+            msg=description,
             start=int(memory_start/1024),
             end=int(memory_end/1024),
             diff=int(memory_diff/1024)
-        ))
+        )))
 
     def end_memory_measure(self):
         currentMemoryUsage = int(self.memory_usage())
         return currentMemoryUsage - self.memory_usage_at_start, currentMemoryUsage, self.memory_usage_at_start
 
-    def mark_memory_measure(self):
+    def mark_memory_measure(self, description):
+        timestamp = time.time() - self.test_start_time
         self.memory_usage_at_mark = int(self.memory_usage())
+        self.test_events.append((timestamp, "{id} | {msg}".format(
+            id=self.id(),
+            msg=description
+        )))
 
     def diff_memory_measure(self):
         currentMemoryUsage = int(self.memory_usage())
         return currentMemoryUsage - self.memory_usage_at_mark, currentMemoryUsage, self.memory_usage_at_mark
 
     def diff_memory_measure_and_report(self, msg=None):
+        timestamp = time.time() - self.test_start_time
         memory_diff, memory_end, memory_start = self.diff_memory_measure()
-        self.logger.info("\n{id} | {msg} | JS Memory start: {start}Kb | end: {end}Kb | diff: {diff}Kb".format(
+        self.test_events.append((timestamp, "{id} | {msg} | JS Memory start: {start}Kb | end: {end}Kb | diff: {diff}Kb".format(
             id=self.id(),
             msg=msg,
             start=int(memory_start/1024),
             end=int(memory_end/1024),
             diff=int(memory_diff/1024)
-        ))
+        )))
 
     def memory_usage(self):
         self.driver.execute_script("window.gc()")
@@ -128,8 +149,13 @@ class QvainTestCase(unittest.TestCase):
         login_button.click()
 
         # we will get a page redirection to another service
-        self.wait.until(EC.title_is("Web Login Service"))
-        loginHakaTestBtn = self.driver.find_element_by_link_text("authn/LoginHakaTest")
+        try:
+            self.wait.until(EC.title_is("Login"))
+            login_button_container = self.driver.find_element_by_class_name("login-button-container")
+            loginHakaTestBtn = login_button_container.find_elements_by_class_name("login-link")[1]
+        except TimeoutException:
+            self.wait.until(EC.title_is("Web Login Service"))
+            loginHakaTestBtn = self.driver.find_element_by_link_text("authn/LoginHakaTest")
         loginHakaTestBtn.click()
 
         # we will get a page redirection to another service again
@@ -169,6 +195,8 @@ class QvainTestCase(unittest.TestCase):
         self.wait.until(EC.title_is("Qvain"))
 
     def logout(self):
+        if self.elem_is_not_found("usermenu"):
+            return
         self.open_usermenu()
         signoutMenuItem = self.driver.find_element_by_id("usermenu_signout")
         signoutMenuItem.click()
@@ -185,11 +213,77 @@ class QvainTestCase(unittest.TestCase):
     def print(self, message):
         self.logger.info(message)
 
+    def run(self, result=None):
+        self.netlogfiles = []
+        self.logger = logging.getLogger()
+        self.logger.level = logging.INFO
+        self.stream_handler = logging.StreamHandler(sys.stdout)
+        self.logger.addHandler(self.stream_handler)
+
+        super().run(result)
+
+        ## analyze netlog
+        #if len(result.errors) > 0 or len(result.failures) > 0:
+        for logfile in self.netlogfiles:
+            print("")
+            print("======================================================================")
+            print("Test Report: " + self.id())
+            print("----------------------------------------------------------------------")
+            test_events_with_network = self.parse_netlog(logfile) + self.test_events
+            test_events_with_network = sorted(test_events_with_network, key=lambda evt: evt[0])
+            for event in test_events_with_network:
+                print("{time:8.3f} | {data}".format(time=event[0], data=event[1]))
+            print("\n")
+        self.logger.removeHandler(self.stream_handler)
+
     def tearDown(self):
         if self.end_test:
             self.end_test()
         self.driver.quit()
-        self.logger.removeHandler(self.stream_handler)
+        self.test_start_time = None
+
+    def parse_netlog(self, netlog):
+        retval = []
+        data = ""
+        with open(netlog, "r") as f:
+            data += f.read()
+        data = data.strip().rstrip(",")
+        try:
+            structure = json.loads(data + "]}")
+        except json.decoder.JSONDecodeError:
+            structure = json.loads(data)
+        first_time = -1
+        for event in structure['events']:
+            if first_time == -1:
+                first_time = int(event['time'])
+            if event['source']['type'] == 1:
+                if event['type'] == 166:
+                    header = event['params']['headers']
+                    headerdict = {}
+                    for line in header:
+                        if line.find(":") == 0:
+                            line = line[1:]
+                        (key, value) = line.split(":", 1)
+                        headerdict[key] = value.strip()
+                    actual_time = (int(event['time']) - first_time) / 1000
+                    retval.append((actual_time," => " + headerdict["method"] + " " + headerdict['scheme']  + " " + headerdict['authority'] + " " + headerdict['path']))
+            if event['type'] == 101:
+                location = event['params']['location']
+                actual_time = (int(event['time']) - first_time) / 1000
+                retval.append((actual_time, " URL CHANGED " + location))
+            if event['type'] == 169:
+                header = event['params']['headers']
+                headerdict = {}
+                for line in header:
+                    try:
+                        (key, value) = line.split(":", 1)
+                        headerdict[key] = value
+                    except:
+                        pass
+                if "location" in headerdict.keys():
+                    actual_time = (int(event['time']) - first_time) / 1000
+                    retval.append((actual_time,"REDIRECTED TO " + headerdict["location"]))
+        return retval
 
     def button_is_disabled(self, btn):
         assert "disabled" in btn.get_attribute("class"), "It looks like that the button was ENABLED."
@@ -225,6 +319,9 @@ class QvainTestCase(unittest.TestCase):
     def close_alert(self):
         close_alert_btn = self.wait.until(EC.presence_of_element_located((By.ID, 'root_alert'))).find_element_by_class_name("close")
         close_alert_btn.click()
+
+    def is_element_visible(self, elemId):
+        return self.find_element(elemId).is_displayed()
 
     def wait_until_clickable_by_class(self, parent, class_name):
         return self.wait.until(EC.element_to_be_clickable((By.CLASS_NAME, class_name)))

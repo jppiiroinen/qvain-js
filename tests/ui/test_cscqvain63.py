@@ -30,11 +30,14 @@ class CSCQVAIN63(QvainTestCase):
         self.start_memory_measure()
 
     def end_test(self):
-        self.end_memory_measure_and_report("end_test")
+        if self.memory_usage_at_start:
+            self.end_memory_measure_and_report()
         self.logout()
         self.close()
 
     def test_1_my_datasets(self):
+        self.start_test()
+
         # ensure that the test datasets does not exist before create.
         datasets = Datasets(self)
         datasets.show()
@@ -50,7 +53,7 @@ class CSCQVAIN63(QvainTestCase):
         
         ## create a new dataset
         # valid dataset, unpublished
-        self.mark_memory_measure()
+        self.mark_memory_measure("created valid unpublished dataset")
         editor = Editor(self)
         editor.show()
         editor.select_schema("I want to link Remote resources")
@@ -68,7 +71,7 @@ class CSCQVAIN63(QvainTestCase):
         editor.close()
 
         # invalid dataset, unpublished
-        self.mark_memory_measure()
+        self.mark_memory_measure("created invalid unpublished dataset")
         editor.show()
         editor.select_schema("I want to link Remote resources")
         editor.show_content_description_tab()
@@ -110,6 +113,7 @@ class CSCQVAIN63(QvainTestCase):
         datasets.edit(test_1_my_datasets_valid_unpublished_id)
 
         # publish that dataset
+        ## TODO: record the RPC traffic?
         assert editor.publish(), "Publish was failed"
         test_1_my_datasets_valid_published_id = test_1_my_datasets_valid_unpublished_id
 
@@ -137,6 +141,7 @@ class CSCQVAIN63(QvainTestCase):
 
 
     def test_2_create_new_dataset(self):
+        self.start_test()
         editor = Editor(self)
         self.with_memory_usage("Editor page is shown",
             editor.show
