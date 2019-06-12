@@ -1,9 +1,10 @@
-PYTHON_CMD:=source venv/bin/activate && source .secrets && python
+PYTHON_CMD:=source venv/bin/activate && source .secrets && python3
 
-all:
+all: venv check
 
 venv:
 	python3 -m venv venv
+	source venv/bin/activate && pip3 install https://github.com/CSCfi/tauhka/archive/v0.0.1.zip
 
 .secrets:
 	cp .secrets.template .secrets
@@ -15,8 +16,11 @@ chromedriver:
 	unzip chromedriver_mac64.zip
 
 clean:
-	rm chromedriver
-	rm chromedriver_*.zip
+	rm -f chromedriver
+	rm -f chromedriver_*.zip
+	rm -f *-networktraffic.json
+	rm -fr __pycache__
+	rm -rf venv
 
 check: .secrets venv chromedriver
 	$(PYTHON_CMD) -m unittest discover

@@ -126,7 +126,7 @@ class Editor(object):
         btn.click()
 
         # verify that a confirmation was opened
-        self.testcase.wait_until_visible("publish-verification-card")
+        self.testcase.wait_until_visible_by_id("publish-verification-card")
 
         # click on the Publish button which is on the confirmation
         verification_btn = self.testcase.find_element("publish-verification-card-button-publish")
