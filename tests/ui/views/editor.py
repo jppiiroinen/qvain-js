@@ -137,10 +137,16 @@ class Editor(object):
 
         # check that there are no failure dialogs visible
         if self.testcase.is_element_visible("publish-modal"):
+            # close the modal dialog, to avoid any issues
+            modal_footer = self.testcase.find_element("publish-modal___BV_modal_footer_")
+            modal_footer.find_element_by_class_name("btn-primary").click()
+            self.testcase.wait_until_hidden_by_id("publish-modal")
+
+            # close the alert
+            self.testcase.close_alert()
             return False
 
         # close the alert
-        #self.testcase.print(alert_text)
         self.testcase.close_alert()
 
         return alert_text.find("Dataset successfully published") != -1

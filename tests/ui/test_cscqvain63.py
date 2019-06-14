@@ -22,7 +22,6 @@ from views.editor import Editor
 from views.datasets import Datasets
 
 
-
 class CSCQVAIN63(QvainTestCase):
     def start_test(self):
         self.login()

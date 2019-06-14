@@ -106,6 +106,7 @@ class QvainTestCase(TauhkaTestCase):
     def close_alert(self):
         close_alert_btn = self.wait_until_located_by_id('root_alert').find_element_by_class_name("close")
         close_alert_btn.click()
+        self.wait_until_hidden_by_id("root_alert")
 
     def get_alert_text(self):
         alertTextElem = self.wait_until_located_by_id('root_alert').find_element_by_css_selector("p")
